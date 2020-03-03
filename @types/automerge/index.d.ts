@@ -17,6 +17,8 @@ declare module 'automerge' {
 
   function init<T>(options?: InitOptions): Doc<T>
   function from<T>(initialState: T | Doc<T>, options?: InitOptions): Doc<T>
+  function getDefaultBackend(): Backend
+  function setDefaultBackend(backend: Backend): void
 
   type InitOptions =
     | string // = actorId

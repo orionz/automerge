@@ -1,6 +1,5 @@
 const { Set } = require('immutable')
 const Frontend = require('../frontend')
-const Backend = require('../backend')
 
 class WatchableDoc {
   constructor (doc) {
@@ -20,7 +19,8 @@ class WatchableDoc {
 
   applyChanges (changes) {
     const oldState = Frontend.getBackendState(this.doc)
-    const [newState, patch] = Backend.applyChanges(oldState, changes)
+    const backend = Frontend.getBackend(this.doc)
+    const [newState, patch] = backend.applyChanges(oldState, changes)
     patch.state = newState
     const newDoc = Frontend.applyPatch(this.doc, patch)
     this.set(newDoc)

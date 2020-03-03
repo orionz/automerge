@@ -1,6 +1,7 @@
 const assert = require('assert')
 const Frontend = require('../frontend')
-const Backend = require('../backend')
+const Automerge = require('../src/automerge')
+const Backend = Automerge.getDefaultBackend()
 const ROOT_ID = '00000000-0000-0000-0000-000000000000'
 const uuid = require('../src/uuid')
 const { STATE } = require('../frontend/constants')

@@ -1,16 +1,17 @@
 const transit = require('transit-immutable-js')
 const uuid = require('./uuid')
 const Frontend = require('../frontend')
-const Backend = require('../backend')
 const { isObject } = require('./common')
+const { getDefaultBackend, setDefaultBackend } = require('./backend')
 
 /**
  * Constructs a new frontend document that reflects the given list of changes.
  */
 function docFromChanges(options, changes) {
   const doc = init(options)
-  const [state, _] = Backend.applyChanges(Backend.init(), changes)
-  const patch = Backend.getPatch(state)
+  const backend = Frontend.getBackend(doc)
+  const [state, _] = backend.applyChanges(backend.init(), changes)
+  const patch = backend.getPatch(state)
   patch.state = state
   return Frontend.applyPatch(doc, patch)
 }
@@ -25,7 +26,7 @@ function init(options) {
   } else if (!isObject(options)) {
     throw new TypeError(`Unsupported options for init(): ${options}`)
   }
-  return Frontend.init(Object.assign({backend: Backend}, options))
+  return Frontend.init(Object.assign({backend: getDefaultBackend()}, options))
 }
 
 /**
@@ -69,26 +70,29 @@ function merge(localDoc, remoteDoc) {
   if (Frontend.getActorId(localDoc) === Frontend.getActorId(remoteDoc)) {
     throw new RangeError('Cannot merge an actor with itself')
   }
+  const backend  = Frontend.getBackend(localDoc)
   const localState  = Frontend.getBackendState(localDoc)
   const remoteState = Frontend.getBackendState(remoteDoc)
-  const [state, patch] = Backend.merge(localState, remoteState)
+  const [state, patch] = backend.merge(localState, remoteState)
   if (patch.diffs.length === 0) return localDoc
   patch.state = state
   return Frontend.applyPatch(localDoc, patch)
 }
 
 function diff(oldDoc, newDoc) {
+  const backend  = Frontend.getBackend(oldDoc)
   const oldState = Frontend.getBackendState(oldDoc)
   const newState = Frontend.getBackendState(newDoc)
-  const changes = Backend.getChanges(oldState, newState)
-  const [state, patch] = Backend.applyChanges(oldState, changes)
+  const changes = backend.getChanges(oldState, newState)
+  const [state, patch] = backend.applyChanges(oldState, changes)
   return patch.diffs
 }
 
 function getChanges(oldDoc, newDoc) {
+  const backend  = Frontend.getBackend(oldDoc)
   const oldState = Frontend.getBackendState(oldDoc)
   const newState = Frontend.getBackendState(newDoc)
-  return Backend.getChanges(oldState, newState)
+  return backend.getChanges(oldState, newState)
 }
 
 function getAllChanges(doc) {
@@ -96,14 +100,16 @@ function getAllChanges(doc) {
 }
 
 function applyChanges(doc, changes) {
+  const backend  = Frontend.getBackend(doc)
   const oldState = Frontend.getBackendState(doc)
-  const [newState, patch] = Backend.applyChanges(oldState, changes)
+  const [newState, patch] = backend.applyChanges(oldState, changes)
   patch.state = newState
   return Frontend.applyPatch(doc, patch)
 }
 
 function getMissingDeps(doc) {
-  return Backend.getMissingDeps(Frontend.getBackendState(doc))
+  const backend  = Frontend.getBackend(doc)
+  return backend.getMissingDeps(Frontend.getBackendState(doc))
 }
 
 function equals(val1, val2) {
@@ -137,13 +143,13 @@ module.exports = {
   init, from, change, emptyChange, undo, redo,
   load, save, merge, diff, getChanges, getAllChanges, applyChanges, getMissingDeps,
   equals, getHistory, uuid,
-  Frontend, Backend,
+  Frontend, getDefaultBackend, setDefaultBackend,
   DocSet: require('./doc_set'),
   WatchableDoc: require('./watchable_doc'),
   Connection: require('./connection')
 }
 
 for (let name of ['canUndo', 'canRedo', 'getObjectId', 'getObjectById', 'getActorId',
-     'setActorId', 'getConflicts', 'Text', 'Table', 'Counter']) {
+     'setActorId', 'getConflicts', 'Text', 'Table', 'Counter' ]) {
   module.exports[name] = Frontend[name]
 }

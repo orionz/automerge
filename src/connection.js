@@ -1,7 +1,6 @@
 const { Map, fromJS } = require('immutable')
 const { lessOrEqual } = require('./common')
 const Frontend = require('../frontend')
-const Backend = require('../backend')
 
 // Updates the vector clock for `docId` in `clockMap` (mapping from docId to vector clock)
 // by merging in the new vector clock `clock`. Returns the updated `clockMap`, in which each node's
@@ -57,11 +56,12 @@ class Connection {
 
   maybeSendChanges (docId) {
     const doc = this._docSet.getDoc(docId)
+    const backend = Frontend.getBackend(doc)
     const state = Frontend.getBackendState(doc)
     const clock = state.getIn(['opSet', 'clock'])
 
     if (this._theirClock.has(docId)) {
-      const changes = Backend.getMissingChanges(state, this._theirClock.get(docId))
+      const changes = backend.getMissingChanges(state, this._theirClock.get(docId))
       if (changes.length > 0) {
         this._theirClock = clockUnion(this._theirClock, docId, clock)
         this.sendMsg(docId, clock, changes)

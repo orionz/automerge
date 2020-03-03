@@ -1,7 +1,7 @@
 const { Map, Set } = require('immutable')
 const uuid = require('./uuid')
 const Frontend = require('../frontend')
-const Backend = require('../backend')
+const { getDefaultBackend } = require('./backend')
 
 class DocSet {
   constructor () {
@@ -27,9 +27,10 @@ class DocSet {
   }
 
   applyChanges (docId, changes) {
-    let doc = this.docs.get(docId) || Frontend.init({backend: Backend})
+    let doc = this.docs.get(docId) || Frontend.init({backend: getDefaultBackend() })
     const oldState = Frontend.getBackendState(doc)
-    const [newState, patch] = Backend.applyChanges(oldState, changes)
+    const backend = Frontend.getBackend(doc)
+    const [newState, patch] = backend.applyChanges(oldState, changes)
     patch.state = newState
     doc = Frontend.applyPatch(doc, patch)
     this.setDoc(docId, doc)

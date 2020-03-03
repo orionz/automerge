@@ -8,6 +8,10 @@ const { Text } = require('./text')
 const { Table } = require('./table')
 const { Counter } = require('./counter')
 
+function getBackend(doc) {
+  return doc[OPTIONS].backend
+}
+
 /**
  * Takes a set of objects that have been updated (in `updated`) and an updated
  * mapping from child objectId to parent objectId (in `inbound`), and returns
@@ -497,5 +501,6 @@ module.exports = {
   canUndo, undo, canRedo, redo,
   getObjectId, getObjectById, getActorId, setActorId, getConflicts,
   getBackendState, getElementIds,
+  getBackend,
   Text, Table, Counter
 }

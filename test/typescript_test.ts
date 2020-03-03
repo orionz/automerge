@@ -1,6 +1,8 @@
 import * as assert from 'assert'
 import * as Automerge from 'automerge'
-import { Backend, Frontend, Counter, Doc } from 'automerge'
+import { getDefaultBackend, Frontend, Counter, Doc } from 'automerge'
+
+const Backend = getDefaultBackend()
 
 const UUID_PATTERN = /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/
 const ROOT_ID = '00000000-0000-0000-0000-000000000000'
