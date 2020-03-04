@@ -64,7 +64,6 @@ function load(string, options) {
 function save(doc) {
   const state = Frontend.getBackendState(doc)
   const backend = Frontend.getBackend(doc)
-  console.log("BACKEND",backend)
   return transit.toJSON(backend.getHistory(state))
 }
 
