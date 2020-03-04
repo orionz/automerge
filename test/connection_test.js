@@ -269,8 +269,8 @@ describe('Automerge.Connection', () => {
     let doc2 = Automerge.merge(Automerge.init(), doc1)
     let doc3 = Automerge.merge(Automerge.init(), doc1)
     nodes[1].setDoc('doc1', doc1)
-    nodes[2].setDoc('doc1', doc1)
-    nodes[3].setDoc('doc1', doc1)
+    nodes[2].setDoc('doc1', doc2)
+    nodes[3].setDoc('doc1', doc3)
 
     execution([[1, 2], [1, 3], [2, 3]], [
       // Advertisement messages
