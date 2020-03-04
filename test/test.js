@@ -1394,11 +1394,11 @@ describe('Automerge', () => {
       let s3 = Automerge.change(s2, doc => doc.birds.push('Wagtail'))
       const obj = Automerge.getObjectId(s1.birds)
       assert.deepEqual(Automerge.diff(s1, s2), [
-        {obj, path: ['birds'], type: 'list', action: 'insert', index: 0, value: 'Robin', elemId: `${Automerge.getActorId(s1)}:1`}
+        {obj, type: 'list', action: 'insert', index: 0, value: 'Robin', elemId: `${Automerge.getActorId(s1)}:1`}
       ])
       assert.deepEqual(Automerge.diff(s1, s3), [
-        {obj, path: ['birds'], type: 'list', action: 'insert', index: 0, value: 'Robin', elemId: `${Automerge.getActorId(s1)}:1`},
-        {obj, path: ['birds'], type: 'list', action: 'insert', index: 1, value: 'Wagtail', elemId: `${Automerge.getActorId(s1)}:2`}
+        {obj, type: 'list', action: 'insert', index: 0, value: 'Robin', elemId: `${Automerge.getActorId(s1)}:1`},
+        {obj, type: 'list', action: 'insert', index: 1, value: 'Wagtail', elemId: `${Automerge.getActorId(s1)}:2`}
       ])
     })
 
@@ -1407,8 +1407,8 @@ describe('Automerge', () => {
       let s2 = Automerge.change(s1, doc => { doc.birds[1] = 'Pied Wagtail'; doc.birds.shift() })
       const obj = Automerge.getObjectId(s1.birds)
       assert.deepEqual(Automerge.diff(s1, s2), [
-        {obj, path: ['birds'], type: 'list', action: 'set',    index: 1, value: 'Pied Wagtail'},
-        {obj, path: ['birds'], type: 'list', action: 'remove', index: 0}
+        {obj, type: 'list', action: 'set',    index: 1, value: 'Pied Wagtail'},
+        {obj, type: 'list', action: 'remove', index: 0}
       ])
     })
 
@@ -1419,24 +1419,10 @@ describe('Automerge', () => {
       assert.deepEqual(Automerge.diff(s1, s2), [
         {action: 'create', type: 'list', obj: Automerge.getObjectId(s2.birds)},
         {action: 'create', type: 'map',  obj: Automerge.getObjectId(s2.birds[0])},
-        {action: 'set',    type: 'map',  obj: Automerge.getObjectId(s2.birds[0]), path: null, key: 'name',  value: 'Chaffinch'},
-        {action: 'insert', type: 'list', obj: Automerge.getObjectId(s2.birds),    path: null, index: 0,     value: Automerge.getObjectId(s2.birds[0]), link: true, elemId: `${Automerge.getActorId(s2)}:1`},
-        {action: 'set',    type: 'map',  obj: rootId,                             path: [],   key: 'birds', value: Automerge.getObjectId(s2.birds),    link: true}
+        {action: 'set',    type: 'map',  obj: Automerge.getObjectId(s2.birds[0]), key: 'name',  value: 'Chaffinch'},
+        {action: 'insert', type: 'list', obj: Automerge.getObjectId(s2.birds),    index: 0,     value: Automerge.getObjectId(s2.birds[0]), link: true, elemId: `${Automerge.getActorId(s2)}:1`},
+        {action: 'set',    type: 'map',  obj: rootId,                             key: 'birds', value: Automerge.getObjectId(s2.birds),    link: true}
       ])
-    })
-
-    it('should include the path to the modified object', () => {
-      let s1 = Automerge.change(Automerge.init(), doc => doc.birds = [{name: 'Chaffinch', habitat: ['woodland']}])
-      let s2 = Automerge.change(s1, doc => doc.birds[0].habitat.push('gardens'))
-      assert.deepEqual(Automerge.diff(s1, s2), [{
-        action: 'insert',
-        type:   'list',
-        obj:    Automerge.getObjectId(s2.birds[0].habitat),
-        elemId: `${Automerge.getActorId(s2)}:2`,
-        path:   ['birds', 0, 'habitat'],
-        index:  1,
-        value:  'gardens'
-      }])
     })
   })
 
