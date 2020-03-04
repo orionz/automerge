@@ -1,11 +1,5 @@
 const assert = require('assert')
 
-const Automerge = require("../src/automerge")
-const WASM_PATH = process.env.WASM_BACKEND_PATH
-if (!WASM_PATH) throw "Undefined WASM_BACKEND_PATH"
-const Backend = require(WASM_PATH)
-Automerge.setDefaultBackend(Backend)
-
 // Assertion that succeeds if the first argument deepEquals at least one of the
 // subsequent arguments (but we don't care which one)
 function assertEqualsOneOf(actual, ...expected) {

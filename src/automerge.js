@@ -63,7 +63,9 @@ function load(string, options) {
 
 function save(doc) {
   const state = Frontend.getBackendState(doc)
-  return transit.toJSON(state.getIn(['opSet', 'history']))
+  const backend = Frontend.getBackend(doc)
+  console.log("BACKEND",backend)
+  return transit.toJSON(backend.getHistory(state))
 }
 
 function merge(localDoc, remoteDoc) {
@@ -126,7 +128,8 @@ function equals(val1, val2) {
 function getHistory(doc) {
   const state = Frontend.getBackendState(doc)
   const actor = Frontend.getActorId(doc)
-  const history = state.getIn(['opSet', 'history'])
+  const backend = Frontend.getBackend(doc)
+  const history = backend.getHistory(state)
   return history.map((change, index) => {
     return {
       get change () {

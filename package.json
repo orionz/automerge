@@ -6,7 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "browsertest": "karma start",
-    "test": "mocha --file test/helpers.js",
+    "test": "mocha",
+    "testwasm": "mocha --file test/wasm.js",
     "build": "webpack && copyfiles --flat @types/automerge/index.d.ts dist",
     "prepublishOnly": "npm run-script build"
   },

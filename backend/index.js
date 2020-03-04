@@ -315,11 +315,15 @@ function redo(state, request) {
   return [state, makePatch(state, diffs)]
 }
 
+function getHistory(state) {
+  return state.getIn(['opSet', 'history'])
+}
+
 function getClock(state) {
   return state.getIn(['opSet', 'clock'])
 }
 
 module.exports = {
   init, applyChanges, applyLocalChange, getPatch,
-  getChanges, getChangesForActor, getMissingChanges, getMissingDeps, merge, getClock
+  getChanges, getChangesForActor, getMissingChanges, getMissingDeps, merge, getClock, getHistory
 }
