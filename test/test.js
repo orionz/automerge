@@ -950,7 +950,10 @@ describe('Automerge', () => {
 
   describe('.undo()', () => {
     function getUndoStack(doc) {
-      return Automerge.Frontend.getBackendState(doc).getIn(['opSet', 'undoStack'])
+      let backend = Automerge.Frontend.getBackend(doc)
+      let state = Automerge.Frontend.getBackendState(doc)
+      let undoStack = backend.getUndoStack(state)
+      return undoStack
     }
 
     it('should allow undo if there have been local changes', () => {
@@ -1099,7 +1102,10 @@ describe('Automerge', () => {
 
   describe('.redo()', () => {
     function getRedoStack(doc) {
-      return Automerge.Frontend.getBackendState(doc).getIn(['opSet', 'redoStack'])
+      let backend = Automerge.Frontend.getBackend(doc)
+      let state = Automerge.Frontend.getBackendState(doc)
+      let redoStack = backend.getRedoStack(state)
+      return redoStack;
     }
 
     it('should allow redo if the last change was an undo', () => {

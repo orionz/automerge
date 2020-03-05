@@ -1,4 +1,5 @@
 const transit = require('transit-immutable-js')
+const { fromJS } = require('immutable')
 const uuid = require('./uuid')
 const Frontend = require('../frontend')
 const { isObject } = require('./common')
@@ -128,7 +129,7 @@ function getHistory(doc) {
   const state = Frontend.getBackendState(doc)
   const actor = Frontend.getActorId(doc)
   const backend = Frontend.getBackend(doc)
-  const history = backend.getHistory(state)
+  const history = fromJS(backend.getHistory(state))
   return history.map((change, index) => {
     return {
       get change () {

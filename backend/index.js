@@ -315,6 +315,15 @@ function redo(state, request) {
   return [state, makePatch(state, diffs)]
 }
 
+function getUndoStack(state) {
+  return state.getIn(['opSet', 'undoStack'])
+}
+
+function getRedoStack(state) {
+  return state.getIn(['opSet', 'redoStack'])
+}
+
+
 function getHistory(state) {
   return state.getIn(['opSet', 'history']).toJS()
 }
@@ -325,5 +334,6 @@ function getClock(state) {
 
 module.exports = {
   init, applyChanges, applyLocalChange, getPatch,
-  getChanges, getChangesForActor, getMissingChanges, getMissingDeps, merge, getClock, getHistory
+  getChanges, getChangesForActor, getMissingChanges, getMissingDeps, merge, getClock,
+  getHistory, getUndoStack, getRedoStack
 }
