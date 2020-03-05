@@ -316,7 +316,7 @@ function redo(state, request) {
 }
 
 function getHistory(state) {
-  return state.getIn(['opSet', 'history'])
+  return state.getIn(['opSet', 'history']).toJS()
 }
 
 function getClock(state) {
