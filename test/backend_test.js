@@ -4,6 +4,16 @@ const Backend = Automerge.getDefaultBackend()
 const uuid = require('../src/uuid')
 const ROOT_ID = '00000000-0000-0000-0000-000000000000'
 
+function cmp(a,b) {
+  if (a > b) return 1;
+  if (a < b) return -1;
+  return 0;
+}
+
+function sort_ops(ops) {
+  return ops.sort((a,b) => cmp(JSON.stringify(a),JSON.stringify(b)))
+}
+
 describe('Automerge.Backend', () => {
   describe('incremental diffs', () => {
     it('should assign to a key in a map', () => {
@@ -388,7 +398,7 @@ describe('Automerge.Backend', () => {
       ]}
       const s0 = Backend.init()
       const [s1, patch] = Backend.applyChanges(s0, [change])
-      assert.deepEqual(Backend.getPatch(s1), {
+      assert.deepEqual(sort_ops(Backend.getPatch(s1).diffs), sort_ops({
         canUndo: false, canRedo: false, clock: {[actor]: 1}, deps: {[actor]: 1},
         diffs: [
           {action: 'create',  obj: item,    type: 'map'},
@@ -399,7 +409,7 @@ describe('Automerge.Backend', () => {
           {action: 'maxElem', obj: todos,   type: 'list', value: 1},
           {action: 'set',     obj: ROOT_ID, type: 'map',  key: 'todos', value: todos, link: true}
         ]
-      })
+      }.diffs))
     })
 
     it('should include Date objects at the root', () => {
