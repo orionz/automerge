@@ -46,11 +46,11 @@ class Scenario {
     }
 
     assertReplicasEqual(): void {
+        console.log(this.steps)
         const firstRepl: Replica = this.replicas.values().next().value
         const replicas = Array.from(this.replicas.values())
         const allEqual = (replicas.every(r => equal(r.docState(), firstRepl.docState())))
         if (!allEqual) {
-            console.log("Not all replicas are equal")
             for (const replica of replicas) {
                 console.log("State at replica: " + replica.id.toString())
                 console.log(JSON.stringify(replica.docState(), null, 4))
@@ -351,7 +351,7 @@ function applyDelete(path: Path, doc: any): void {
         let nextField = pathCopy.pop()
         location = location[nextField]
     }
-    let lastField = path[0]
+    let lastField = pathCopy[0]
     delete doc[lastField]
 }
 
@@ -368,13 +368,13 @@ function applySet(path: Path, value: any, doc: any): void {
         }
         return
     }
-    let pathCopy = path.splice(0)
+    let pathCopy = path.slice(0)
     let location = doc
     while (pathCopy.length > 1) {
         let nextField = pathCopy.pop()
         location = location[nextField]
     }
-    let lastField = path[0]
+    let lastField = pathCopy[0]
     doc[lastField] = value
 }
 
@@ -389,7 +389,7 @@ function applyMutation(docWrapper: Automerge.Doc<any>, mutation: Mutation): Auto
 }
 
 function jsonObjectArb(): fc.Arbitrary<any>{
-    const key = fc.string(1)
+    const key = fc.string(1, 100)
     const values = [fc.boolean(), fc.integer(), fc.double(), fc.string(), fc.constant(null)]
     const maxDepth = 4
     return fc.anything({key, values, maxDepth})
@@ -402,7 +402,7 @@ describe("Automerge", () => {
         // state
         fc.assert(fc.property(scenarioArb, scenario => {
             scenario.assertReplicasEqual()
-        }), {numRuns: 1})
+        }), {numRuns: 10})
     })
 })
 
