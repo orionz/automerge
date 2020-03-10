@@ -396,6 +396,7 @@ function jsonObjectArb(): fc.Arbitrary<any>{
 }
 
 
+/*
 describe("Automerge", () => {
     it.only("should converge", () => {
         // Given an arbitrary scenario, the replicas should all have the same
@@ -405,5 +406,5 @@ describe("Automerge", () => {
         }), {numRuns: 10})
     })
 })
-
+*/
 

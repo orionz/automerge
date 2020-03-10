@@ -11,7 +11,8 @@ function cmp(a,b) {
 }
 
 function sort_ops(ops) {
-  return ops.sort((a,b) => cmp(JSON.stringify(a),JSON.stringify(b)))
+//  return ops.sort((a,b) => cmp(JSON.stringify(a),JSON.stringify(b)))
+  return ops
 }
 
 describe('Automerge.Backend', () => {
