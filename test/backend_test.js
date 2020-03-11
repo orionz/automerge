@@ -393,7 +393,6 @@ describe('Automerge.Backend', () => {
         {action: 'ins',      obj: todos,   key: '_head',     elem: 1},
         {action: 'makeMap',  obj: item},
         {action: 'set',      obj: item,    key: 'title',     value: 'water plants'},
-        {action: 'set',      obj: item,    key: 'done',      value: false},
         {action: 'link',     obj: todos,   key:`${actor}:1`, value: item},
         {action: 'link',     obj: ROOT_ID, key: 'todos',     value: todos}
       ]}
@@ -404,7 +403,6 @@ describe('Automerge.Backend', () => {
         diffs: [
           {action: 'create',  obj: item,    type: 'map'},
           {action: 'set',     obj: item,    type: 'map',  key: 'title', value: 'water plants'},
-          {action: 'set',     obj: item,    type: 'map',  key: 'done',  value: false},
           {action: 'create',  obj: todos,   type: 'list'},
           {action: 'insert',  obj: todos,   type: 'list', index: 0,     value: item,  link: true, elemId: `${actor}:1`},
           {action: 'maxElem', obj: todos,   type: 'list', value: 1},
