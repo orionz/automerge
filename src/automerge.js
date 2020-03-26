@@ -10,8 +10,6 @@ if (process.env.WASM_BACKEND_PATH) {
   _backend.setDefaultBackend(wasm)
 }
 
-const Backend = _backend.getDefaultBackend()
-
 function setDefaultBackend(b) {
   module.exports.Backend = b
   return _backend.setDefaultBackend(b)
@@ -39,7 +37,7 @@ function init(options) {
   } else if (!isObject(options)) {
     throw new TypeError(`Unsupported options for init(): ${options}`)
   }
-  return Frontend.init(Object.assign({backend: Backend}, options))
+  return Frontend.init(Object.assign({backend: _backend.getDefaultBackend()}, options))
 }
 
 /**
@@ -158,11 +156,13 @@ module.exports = {
   init, from, change, emptyChange, undo, redo,
   load, save, merge, diff, getChanges, getAllChanges, applyChanges, getMissingDeps,
   equals, getHistory, uuid,
-  Frontend, setDefaultBackend, Backend,
+  Frontend, setDefaultBackend,
   DocSet: require('./doc_set'),
   WatchableDoc: require('./watchable_doc'),
   Connection: require('./connection')
 }
+
+module.exports.Backend = _backend.getDefaultBackend()
 
 
 for (let name of ['canUndo', 'canRedo', 'getObjectId', 'getObjectById', 'getActorId',
