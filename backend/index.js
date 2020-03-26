@@ -332,8 +332,15 @@ function getClock(state) {
   return state.getIn(['opSet', 'clock'])
 }
 
-module.exports = {
+const js_backend = {
   init, applyChanges, applyLocalChange, getPatch,
   getChanges, getChangesForActor, getMissingChanges, getMissingDeps, merge, getClock,
   getHistory, getUndoStack, getRedoStack
+}
+
+if (process.env.WASM_BACKEND_PATH) {
+  module.exports = require(process.env.WASM_BACKEND_PATH);
+  module.exports._js_backend = js_backend
+} else {
+  module.exports = js_backend
 }

@@ -2,17 +2,16 @@ const transit = require('transit-immutable-js')
 const { fromJS } = require('immutable')
 const uuid = require('./uuid')
 const Frontend = require('../frontend')
+const defaultBackend = require('../backend')
 const { isObject } = require('./common')
-const _backend = require('./backend')
 
-if (process.env.WASM_BACKEND_PATH) {
-  let wasm = require(process.env.WASM_BACKEND_PATH);
-  _backend.setDefaultBackend(wasm)
-}
+const _backendMgr = require('./backend')
+
+_backendMgr.setDefaultBackend(defaultBackend)
 
 function setDefaultBackend(b) {
   module.exports.Backend = b
-  return _backend.setDefaultBackend(b)
+  return _backendMgr.setDefaultBackend(b)
 }
 
 /**
@@ -37,7 +36,7 @@ function init(options) {
   } else if (!isObject(options)) {
     throw new TypeError(`Unsupported options for init(): ${options}`)
   }
-  return Frontend.init(Object.assign({backend: _backend.getDefaultBackend()}, options))
+  return Frontend.init(Object.assign({backend: _backendMgr.getDefaultBackend()}, options))
 }
 
 /**
@@ -162,8 +161,7 @@ module.exports = {
   Connection: require('./connection')
 }
 
-module.exports.Backend = _backend.getDefaultBackend()
-
+module.exports.Backend = _backendMgr.getDefaultBackend()
 
 for (let name of ['canUndo', 'canRedo', 'getObjectId', 'getObjectById', 'getActorId',
      'setActorId', 'getConflicts', 'Text', 'Table', 'Counter' ]) {
