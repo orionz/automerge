@@ -1,3 +1,6 @@
+if (!global.wasm) {
+  return
+}
 const assert = require('assert')
 const WASM_PATH = process.env.WASM_BACKEND_PATH
 if (!WASM_PATH) throw "Undefined WASM_BACKEND_PATH"

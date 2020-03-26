@@ -3,7 +3,14 @@ const { fromJS } = require('immutable')
 const uuid = require('./uuid')
 const Frontend = require('../frontend')
 const { isObject } = require('./common')
-const { getDefaultBackend, setDefaultBackend } = require('./backend')
+const _backend = require('./backend')
+
+const Backend = _backend.getDefaultBackend()
+
+function setDefaultBackend(b) {
+  module.exports.Backend = b
+  return _backend.setDefaultBackend(b)
+}
 
 /**
  * Constructs a new frontend document that reflects the given list of changes.
@@ -27,7 +34,7 @@ function init(options) {
   } else if (!isObject(options)) {
     throw new TypeError(`Unsupported options for init(): ${options}`)
   }
-  return Frontend.init(Object.assign({backend: getDefaultBackend()}, options))
+  return Frontend.init(Object.assign({backend: Backend}, options))
 }
 
 /**
@@ -146,11 +153,12 @@ module.exports = {
   init, from, change, emptyChange, undo, redo,
   load, save, merge, diff, getChanges, getAllChanges, applyChanges, getMissingDeps,
   equals, getHistory, uuid,
-  Frontend, getDefaultBackend, setDefaultBackend,
+  Frontend, setDefaultBackend, Backend,
   DocSet: require('./doc_set'),
   WatchableDoc: require('./watchable_doc'),
   Connection: require('./connection')
 }
+
 
 for (let name of ['canUndo', 'canRedo', 'getObjectId', 'getObjectById', 'getActorId',
      'setActorId', 'getConflicts', 'Text', 'Table', 'Counter' ]) {
