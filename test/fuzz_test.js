@@ -1,9 +1,8 @@
-if (!global.wasm) {
-  return
-}
 const assert = require('assert')
 const WASM_PATH = process.env.WASM_BACKEND_PATH
-if (!WASM_PATH) throw "Undefined WASM_BACKEND_PATH"
+if (!WASM_PATH)  {
+  return
+}
 const WasmBackend = require(WASM_PATH)
 const JsBackend = require('../backend')
 const seedrandom = require('seedrandom')

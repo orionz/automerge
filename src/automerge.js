@@ -5,6 +5,11 @@ const Frontend = require('../frontend')
 const { isObject } = require('./common')
 const _backend = require('./backend')
 
+if (process.env.WASM_BACKEND_PATH) {
+  let wasm = require(process.env.WASM_BACKEND_PATH);
+  _backend.setDefaultBackend(wasm)
+}
+
 const Backend = _backend.getDefaultBackend()
 
 function setDefaultBackend(b) {
