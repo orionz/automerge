@@ -338,9 +338,14 @@ const js_backend = {
   getHistory, getUndoStack, getRedoStack
 }
 
+module.exports = require("automerge-backend-asmjs");
+
+/*
+
 if (process.env.WASM_BACKEND_PATH) {
   module.exports = require(process.env.WASM_BACKEND_PATH);
   module.exports._js_backend = js_backend
 } else {
   module.exports = js_backend
 }
+*/

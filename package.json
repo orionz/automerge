@@ -22,6 +22,7 @@
   "homepage": "https://github.com/automerge/automerge",
   "license": "MIT",
   "dependencies": {
+    "automerge-backend-asmjs": "^0.1.0",
     "fast-deep-equal": "^3.1.1",
     "immutable": "^3.8.2",
     "transit-immutable-js": "^0.7.0",

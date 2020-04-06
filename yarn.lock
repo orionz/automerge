@@ -494,6 +494,13 @@ atob@^2.1.1:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
+automerge-backend-asmjs@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/automerge-backend-asmjs/-/automerge-backend-asmjs-0.1.0.tgz#0e1c894409028136274bdcc79bcf976727041e74"
+  integrity sha512-NNUfXE/2WZkXHMYxcpaVSPsPTpYIxJOZE+IwFfyDke2W8kIpIMvdoy25aRDrM06Tdq+/5WUpGHtY7KX43W72+g==
+  dependencies:
+    immutable "^3.8.2"
+
 babel-code-frame@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-code-frame/-/babel-code-frame-6.26.0.tgz#63fd43f7dc1e3bb7ce35947db8fe369a3f58c74b"
