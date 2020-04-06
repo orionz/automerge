@@ -18,6 +18,7 @@ declare module 'automerge' {
   function init<T>(options?: InitOptions): Doc<T>
   function from<T>(initialState: T | Doc<T>, options?: InitOptions): Doc<T>
   function setDefaultBackend(backend: Backend): void
+  function getDefaultBackend(): Backend
 
   type InitOptions =
     | string // = actorId
@@ -171,6 +172,7 @@ declare module 'automerge' {
     function getPatch(state: BackendState): Patch
     function init(): BackendState
     function merge(local: BackendState, remote: BackendState): BackendState
+    function getHistory(back: BackendState): Change[]
   }
 
   // Internals
