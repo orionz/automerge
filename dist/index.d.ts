@@ -180,6 +180,8 @@ declare module 'automerge' {
     message: string
     actor: string
     seq: number
+    time: number
+    startOp: number
     deps: Hash[]
     ops: Op[]
   }
