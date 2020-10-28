@@ -96,21 +96,21 @@ function makeChange(doc, requestType, context, options) {
   }
 
   if (doc[OPTIONS].backend) {
-    const [backendState, patch] = doc[OPTIONS].backend.applyLocalChange(state.backendState, request)
+    const [backendState, patch, change] = doc[OPTIONS].backend.applyLocalChange(state.backendState, request)
     state.backendState = backendState
     // NOTE: When performing a local change, the patch is effectively applied twice -- once by the
     // context invoking interpretPatch as soon as any change is made, and the second time here
     // (after a round-trip through the backend). This is perhaps more robust, as changes only take
     // effect in the form processed by the backend, but the downside is a performance cost.
     // Should we change this?
-    return [applyPatchToDoc(doc, patch, state, true), request]
+    return [applyPatchToDoc(doc, patch, state, true), request, change]
 
   } else {
     if (!context) context = new Context(doc, actor)
     const queuedRequest = copyObject(request)
     queuedRequest.before = doc
     state.requests = state.requests.concat([queuedRequest])
-    return [updateRootObject(doc, context.updated, state), request]
+    return [updateRootObject(doc, context.updated, state), request, null]
   }
 }
 
@@ -219,7 +219,7 @@ function change(doc, options, callback) {
 
   if (Object.keys(context.updated).length === 0) {
     // If the callback didn't change anything, return the original document object unchanged
-    return [doc, null]
+    return [doc, null, null]
   } else {
     return makeChange(doc, 'change', context, options)
   }

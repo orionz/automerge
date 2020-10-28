@@ -266,7 +266,7 @@ function applyLocalChange(backend, request) {
       })
   })
   backend.frozen = true
-  return [{state}, patch]
+  return [{state}, patch, binaryChange]
 }
 
 /**

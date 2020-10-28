@@ -27,22 +27,27 @@ function from(initialState, options) {
 }
 
 function change(doc, options, callback) {
-  const [newDoc, change] = Frontend.change(doc, options, callback)
+  const [newDoc, request, change] = Frontend.change(doc, options, callback)
   return newDoc
 }
 
+function change2(doc, options, callback) {
+  const [newDoc, request, change] = Frontend.change(doc, options, callback)
+  return [newDoc, change]
+}
+
 function emptyChange(doc, options) {
-  const [newDoc, change] = Frontend.emptyChange(doc, options)
+  const [newDoc, request, change] = Frontend.emptyChange(doc, options)
   return newDoc
 }
 
 function undo(doc, options) {
-  const [newDoc, change] = Frontend.undo(doc, options)
+  const [newDoc, request, change] = Frontend.undo(doc, options)
   return newDoc
 }
 
 function redo(doc, options) {
-  const [newDoc, change] = Frontend.redo(doc, options)
+  const [newDoc, request, change] = Frontend.redo(doc, options)
   return newDoc
 }
 
@@ -134,6 +139,7 @@ function setDefaultBackend(newBackend) {
 }
 
 module.exports = {
+  change2,
   init, from, change, emptyChange, undo, redo, clone, free,
   load, save, merge, getChanges, getAllChanges, applyChanges, getMissingDeps,
   encodeChange, decodeChange, equals, getHistory, uuid,
