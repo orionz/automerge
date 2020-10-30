@@ -1,8 +1,19 @@
-const { Map, List } = require('immutable')
-const { copyObject } = require('../src/common')
-const OpSet = require('./op_set')
-const { SkipList } = require('./skip_list')
-const { splitContainers, encodeChange, decodeChanges, encodeDocument, constructPatch } = require('./columnar')
+let Backend = require('./wasm')
+let encodeChange, decodeChanges // initialized by initCodecFunctions
+const util = require('util');
+
+function initCodecFunctions(functions) {
+  encodeChange = functions.encodeChange
+  decodeChanges = functions.decodeChanges
+}
+
+function init() {
+  return { state: Backend.State.new(), frozen: false }
+}
+
+function load(data) {
+  return { state: Backend.State.load(data), frozen: false }
+}
 
 function backendState(backend) {
   if (backend.frozen) {
@@ -15,188 +26,60 @@ function backendState(backend) {
   return backend.state
 }
 
-/**
- * Returns an empty node state.
- */
-function init() {
-  const opSet = OpSet.init()
-  const state = Map({opSet, objectIds: Map()})
-  return {state, heads: []}
-}
-
 function clone(backend) {
-  return {state: backendState(backend), heads: backend.heads}
+  const state = backend.state.clone();
+  return { state, frozen: false }
 }
 
 function free(backend) {
+  backend.state.free()
   backend.state = null
   backend.frozen = true
 }
 
-/**
- * Constructs a patch object from the current node state `state` and the
- * object modifications `diffs`.
- */
-function makePatch(state, diffs, request, isIncremental) {
-  const clock = state.getIn(['opSet', 'states']).map(seqs => seqs.size).toJSON()
-  const deps  = state.getIn(['opSet', 'deps']).toJSON().sort()
-  const maxOp = state.getIn(['opSet', 'maxOp'], 0)
-  const patch = {clock, deps, diffs, maxOp}
-
-  if (isIncremental && request) {
-    patch.actor = request.actor
-    patch.seq   = request.seq
-
-    // Omit the local actor's own last change from deps
-    const lastHash = state.getIn(['opSet', 'states', request.actor, request.seq - 1])
-    patch.deps = patch.deps.filter(dep => dep !== lastHash)
-  }
-  return patch
-}
-
-/**
- * The implementation behind `applyChanges()`, `applyLocalChange()`, and
- * `loadChanges()`.
- */
-function apply(state, changes, request, isIncremental) {
-  let diffs = isIncremental ? {} : null
-  let opSet = state.get('opSet')
-  for (let change of changes) {
-    for (let chunk of splitContainers(change)) {
-      if (request) {
-        opSet = OpSet.addLocalChange(opSet, chunk, diffs)
-      } else {
-        opSet = OpSet.addChange(opSet, chunk, diffs)
-      }
-    }
-  }
-
-  OpSet.finalizePatch(opSet, diffs)
-  state = state.set('opSet', opSet)
-
-  return [state, isIncremental ? makePatch(state, diffs, request, true) : null]
-}
-
-/**
- * Applies a list of `changes` from remote nodes to the node state `backend`.
- * Returns a two-element array `[state, patch]` where `state` is the updated
- * node state, and `patch` describes the modifications that need to be made
- * to the document objects to reflect these changes.
- */
 function applyChanges(backend, changes) {
-  let [state, patch] = apply(backendState(backend), changes, null, true)
-  const heads = OpSet.getHeads(state.get('opSet'))
-  backend.frozen = true
-  return [{state, heads}, patch]
-}
-
-/**
- * Takes a single change request `request` made by the local user, and applies
- * it to the node state `backend`. Returns a two-element array `[backend, patch]`
- * where `backend` is the updated node state, and `patch` confirms the
- * modifications to the document objects.
- */
-function applyLocalChange(backend, change) {
   const state = backendState(backend)
-  if (change.seq <= state.getIn(['opSet', 'states', change.actor], List()).size) {
-    throw new RangeError('Change request has already been applied')
-  }
-
-  // Add the local actor's last change hash to deps. We do this because when frontend
-  // and backend are on separate threads, the frontend may fire off several local
-  // changes in sequence before getting a response from the backend; since the binary
-  // encoding and hashing is done by the backend, the frontend does not know the hash
-  // of its own last change in this case. Rather than handle this situation as a
-  // special case, we say that the frontend includes only specifies other actors'
-  // deps in changes it generates, and the dependency from the local actor's last
-  // change is always added here in the backend.
-  //
-  // Strictly speaking, we should check whether the local actor's last change is
-  // indirectly reachable through a different actor's change; in that case, it is not
-  // necessary to add this dependency. However, it doesn't do any harm either (only
-  // using a few extra bytes of storage).
-  if (change.seq > 1) {
-    const lastHash = state.getIn(['opSet', 'states', change.actor, (change.seq - 2)])
-    if (!lastHash) {
-      throw new RangeError(`Cannot find hash of localChange before seq=${change.seq}`)
-    }
-    let deps = {[lastHash]: true}
-    for (let hash of change.deps) deps[hash] = true
-    change.deps = Object.keys(deps).sort()
-  }
-
-  const binaryChange = encodeChange(change)
-  const request = { actor: change.actor, seq: change.seq }
-  const [state2, patch] = apply(state, [binaryChange], request, true)
-  const heads = OpSet.getHeads(state2.get('opSet'))
+  const patch = state.applyChanges(changes)
   backend.frozen = true
-  return [{state: state2, heads}, patch, binaryChange]
+  return [{ state, frozen: false }, patch]
 }
 
-/**
- * Returns the state of the document serialised to an Uint8Array.
- */
-function save(backend) {
-  return encodeDocument(getChanges(backend, []))
+function applyLocalChange(backend, request) {
+  const state = backendState(backend)
+  const [patch,change] = state.applyLocalChange(request)
+  backend.frozen = true
+  return [{ state, frozen: false }, patch, change]
 }
 
-/**
- * Loads the document and/or changes contained in an Uint8Array, and returns a
- * backend initialised with this state.
- */
-function load(data) {
-  // Reconstruct the original change history that created the document.
-  // It's a bit silly to convert to and from the binary encoding several times...!
-  const binaryChanges = decodeChanges([data]).map(encodeChange)
-  return loadChanges(init(), binaryChanges)
-}
-
-/**
- * Applies a list of `changes` to the node state `backend`, and returns the updated
- * state with those changes incorporated. Unlike `applyChanges()`, this function
- * does not produce a patch describing the incremental modifications, making it
- * a little faster when loading a document from disk. When all the changes have
- * been loaded, you can use `getPatch()` to construct the latest document state.
- */
 function loadChanges(backend, changes) {
   const state = backendState(backend)
-  const [newState, _] = apply(state, changes, null, false)
+  state.loadChanges(changes)
   backend.frozen = true
-  return {state: newState, heads: OpSet.getHeads(newState.get('opSet'))}
+  return { state, frozen: false }
 }
 
-/**
- * Returns a patch that, when applied to an empty document, constructs the
- * document tree in the state described by the node state `backend`.
- */
 function getPatch(backend) {
-  const state = backendState(backend)
-  const diffs = constructPatch(save(backend))
-  return makePatch(state, diffs, null, false)
+  return backendState(backend).getPatch()
 }
 
-/**
- * Returns an array of hashes of the current "head" changes (i.e. those changes
- * that no other change depends on).
- */
-function getHeads(backend) {
-  return backend.heads
+function getChanges(backend, clock) {
+  return backendState(backend).getChanges(clock)
 }
 
-function getChanges(backend, haveDeps) {
-  if (!Array.isArray(haveDeps)) {
-    throw new TypeError('Pass an array of hashes to Backend.getChanges()')
-  }
-  const state = backendState(backend)
-  return OpSet.getMissingChanges(state.get('opSet'), List(haveDeps))
+function getChangesForActor(backend, actor) {
+  return backendState(backend).getChangesForActor(actor)
 }
 
 function getMissingDeps(backend) {
-  const state = backendState(backend)
-  return OpSet.getMissingDeps(state.get('opSet'))
+  return backendState(backend).getMissingDeps()
+}
+
+function save(backend) {
+  return backendState(backend).save()
 }
 
 module.exports = {
-  init, clone, free, applyChanges, applyLocalChange, save, load, loadChanges, getPatch,
-  getHeads, getChanges, getMissingDeps
+  initCodecFunctions,
+  init, clone, save, load, free, applyChanges, applyLocalChange, loadChanges, getPatch,
+  getChanges, getChangesForActor, getMissingDeps,
 }
