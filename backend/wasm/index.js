@@ -166,7 +166,7 @@ class State {
     }
     /**
     * @param {Array<any>} changes
-    * @returns {any}
+    * @returns {Array<any>}
     */
     applyChanges(changes) {
         var ret = wasm.state_applyChanges(this.ptr, addHeapObject(changes));
@@ -174,9 +174,11 @@ class State {
     }
     /**
     * @param {Array<any>} changes
+    * @returns {any}
     */
     loadChanges(changes) {
-        wasm.state_loadChanges(this.ptr, addHeapObject(changes));
+        var ret = wasm.state_loadChanges(this.ptr, addHeapObject(changes));
+        return takeObject(ret);
     }
     /**
     * @param {any} change
@@ -191,6 +193,13 @@ class State {
     */
     getPatch() {
         var ret = wasm.state_getPatch(this.ptr);
+        return takeObject(ret);
+    }
+    /**
+    * @returns {any}
+    */
+    getHeads() {
+        var ret = wasm.state_getHeads(this.ptr);
         return takeObject(ret);
     }
     /**

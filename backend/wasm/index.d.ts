@@ -4,13 +4,14 @@ export class State {
   free(): void;
 /**
 * @param {Array<any>} changes 
-* @returns {any} 
+* @returns {Array<any>} 
 */
-  applyChanges(changes: Array<any>): any;
+  applyChanges(changes: Array<any>): Array<any>;
 /**
 * @param {Array<any>} changes 
+* @returns {any} 
 */
-  loadChanges(changes: Array<any>): void;
+  loadChanges(changes: Array<any>): any;
 /**
 * @param {any} change 
 * @returns {Array<any>} 
@@ -20,6 +21,10 @@ export class State {
 * @returns {any} 
 */
   getPatch(): any;
+/**
+* @returns {any} 
+*/
+  getHeads(): any;
 /**
 * @param {any} have_deps 
 * @returns {Array<any>} 
